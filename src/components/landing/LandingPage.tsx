@@ -89,8 +89,8 @@ const LandingPage: React.FC = () => {
                         transition={{ delay: 0.2 }}
                         className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed"
                     >
-                        Professional-grade wallet pool intelligence.
-                        Secure, browser-only analysis for institutional-scale datasets.
+                        Search and compare wallet pools.
+                        Secure, browser-only analysis for large scale datasets.
                     </motion.p>
                 </div>
             </header>
