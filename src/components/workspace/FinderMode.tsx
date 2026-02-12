@@ -61,7 +61,7 @@ const FinderMode: React.FC = () => {
                                             <span className="text-xs font-bold text-gray-400 uppercase tracking-tight">{doc.fileName}</span>
                                             {doc.walletValues[search.trim().toLowerCase()] && doc.walletValues[search.trim().toLowerCase()] !== '0' && (
                                                 <span className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
-                                                    STAKED: {doc.walletValues[search.trim().toLowerCase()]} {doc.valueUnit || ''}
+                                                    {(doc.valueUnit || 'STAKED').toUpperCase()}: {doc.walletValues[search.trim().toLowerCase()]}
                                                 </span>
                                             )}
                                         </div>

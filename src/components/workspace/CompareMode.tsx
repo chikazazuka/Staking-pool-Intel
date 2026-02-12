@@ -107,13 +107,13 @@ const CompareMode: React.FC = () => {
                                     <div className="flex flex-row gap-4 text-xs font-sans whitespace-nowrap">
                                         {poolA?.walletValues[w] && poolA.walletValues[w] !== '0' && (
                                             <div className="flex flex-col">
-                                                <span className="text-[10px] text-gray-400 uppercase font-bold">Base Value</span>
+                                                <span className="text-[10px] text-gray-400 uppercase font-bold">Base {poolA.valueUnit || 'Value'}</span>
                                                 <span className="text-blue-600 font-black">{poolA.walletValues[w]} <span className="text-[10px] opacity-70">{poolA.valueUnit || ''}</span></span>
                                             </div>
                                         )}
                                         {poolB?.walletValues[w] && poolB.walletValues[w] !== '0' && (
                                             <div className="flex flex-col">
-                                                <span className="text-[10px] text-gray-400 uppercase font-bold">Target Value</span>
+                                                <span className="text-[10px] text-gray-400 uppercase font-bold">Target {poolB.valueUnit || 'Value'}</span>
                                                 <span className="text-emerald-600 font-black">{poolB.walletValues[w]} <span className="text-[10px] opacity-70">{poolB.valueUnit || ''}</span></span>
                                             </div>
                                         )}
