@@ -1,73 +1,76 @@
-# React + TypeScript + Vite
+# Staking Pool Intel
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A client-side web app for analyzing wallet behavior across staking pools. Upload the wallet list for each pool (for example 7-day, 14-day and 6-month pools) and see which wallets restaked, which left, and which are staking in several pools at once.
 
-Currently, two official plugins are available:
+Everything runs in your browser. Files are parsed locally and nothing is uploaded to a server.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+Load up to 5 pools, then use the workspace modes:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Mode | What it does |
+| --- | --- |
+| **Wallet Finder** | Look up one address and see which pools contain it, with its staked value and unit. |
+| **Batch Analysis** | Paste a list of addresses, see which pools each belongs to, and export the results as CSV. |
+| **Overlap Detection** | List wallets present in 2 or more pools, with a minimum-overlap filter and address search. |
+| **Pool Comparison** | Pick a base pool (A) and a target pool (B) to count **retained** (restaked), **lost** and **new** wallets. |
+| **Analytics** | Charts and summary metrics for wallet counts across pools. |
+| **Data Validation** | Per-file row, valid-wallet and duplicate counts, plus a deduplicated CSV export. |
 
-## Expanding the ESLint configuration
+### Typical workflow
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Restaking:** compare an earlier pool (A) with a later pool (B). Wallets in both restaked.
+- **Multi-pool staking:** use Overlap Detection to find wallets staking in several pools.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+The app has no notion of time. Whether a wallet restaked or staked concurrently depends on which files you upload.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Supported files
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `.csv`, `.xls`, `.xlsx`
+- `.pdf`, `.docx` (wallets are extracted by regex, with no values)
+
+Only EVM addresses (`0x` followed by 40 hex characters) are recognized. For spreadsheets, the app looks for a column whose header contains `wallet` or `address`, and guesses the value column from headers such as `staked`, `balance`, `amount` or `usd`. The value column's header is shown as the unit label. Other files fall back to scanning the whole text for addresses.
+
+The pool name is the filename before the first dot, so name files clearly (for example `7-days.xlsx`).
+
+Sample files in the repo: `sample_staked_data_*.csv` and `sample_unit_data_*.csv`.
+
+## Known limitations
+
+- If a wallet has several rows in one file, only the first value is kept. Later rows are counted as duplicates and not summed.
+- Values are kept as text, not numbers, so amounts in different units are not summed or compared.
+- Multi-sheet Excel files are merged into a single pool.
+- Files over 5 MB are still parsed on the main thread. `src/workers/parser.worker.js` is not wired in yet.
+
+## Tech stack
+
+React 19, TypeScript, Vite, Tailwind CSS 4, React Router, Recharts, Framer Motion. File parsing uses PapaParse, SheetJS (`xlsx`), `pdfjs-dist` and `mammoth`.
+
+## Getting started
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Then open http://localhost:5173.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Other scripts: `npm run build` (type-check and production build), `npm run lint`, `npm run preview`.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Project layout
+
 ```
+src/
+  components/
+    landing/     landing page
+    layout/      workspace shell and sidebar
+    workspace/   one component per mode
+  context/       DocumentContext: loaded pools, overlap map
+  hooks/         usePoolIntel (upload flow), useDocumentSearch
+  utils/         parsers.ts (file parsing and wallet extraction)
+  workers/       parser.worker.js
+```
+
+## Roadmap
+
+A planned v2 would add behavior prediction (restaking, next pool, stake size, pool-level forecasts) to help tune minimum stake and APY/APR. It would stay client-side, running Python through Pyodide in a Web Worker.
